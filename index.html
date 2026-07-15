@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRconnect — The Universal QR Infrastructure</title>
+<style>
+  :root{
+    --bg:#0c0705;
+    --panel:#1a0f0c;
+    --panel-2:#210f0d;
+    --border:#3a1a14;
+    --green:#a4ff2e;
+    --green-dim:#7ec428;
+    --text:#f3ece6;
+    --text-dim:#c9b9ae;
+    --text-faint:#8a7a70;
+    --red:#ff4d4d;
+    --orange:#ff9f40;
+    --purple:#b083ff;
+    --blue:#4dc3ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+  html,body{background:var(--bg);color:var(--text);overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 70% 8%, rgba(164,255,46,0.06), transparent 60%),
+      var(--bg);
+  }
+
+  .layout{display:flex;min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{
+    width:230px;
+    flex-shrink:0;
+    background:#0f0906;
+    border-right:1px solid var(--border);
+    padding:20px 14px;
+    display:flex;
+    flex-direction:column;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .logo{
+    display:flex;align-items:center;gap:8px;
+    font-weight:800;font-size:19px;color:var(--green);
+    padding:6px 8px 20px 8px;
+    letter-spacing:0.3px;
+  }
+  .logo .sq{
+    width:22px;height:22px;background:var(--green);border-radius:4px;
+    display:inline-block;
+    background-image:
+      linear-gradient(#0f0906 2px, transparent 2px),
+      linear-gradient(90deg, #0f0906 2px, transparent 2px);
+    background-size:7px 7px;
+  }
+  .logo span.dim{color:var(--text);}
+  nav.mainnav{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:9px;
+    color:var(--text-dim);font-size:14px;font-weight:500;
+    cursor:pointer;
+    border:1px solid transparent;
+    transition:all .15s ease;
+  }
+  .nav-item .ic{font-size:15px;width:18px;text-align:center;}
+  .nav-item:hover{background:#1c1109;color:var(--text);}
+  .nav-item.active{
+    background:linear-gradient(90deg, rgba(164,255,46,0.14), rgba(164,255,46,0.02));
+    border-color:rgba(164,255,46,0.25);
+    color:var(--green);
+  }
+  .sidebar-footer{margin-top:auto;}
+  .network-box{
+    border:1px solid var(--border);border-radius:12px;
+    padding:12px;margin-bottom:12px;background:#150c08;
+  }
+  .network-box .label{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .network-box .name{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--green);font-size:14px;}
+  .socials{display:flex;gap:10px;margin-top:10px;}
+  .socials span{
+    width:28px;height:28px;border-radius:8px;background:#1e120c;
+    display:flex;align-items:center;justify-content:center;font-size:12px;
+    color:var(--text-dim);cursor:pointer;transition:.15s;
+  }
+  .socials span:hover{background:var(--green);color:#0c0705;}
+  .connect-btn{
+    width:100%;padding:12px;border:none;border-radius:10px;
+    background:var(--green);color:#0c0705;font-weight:700;font-size:14px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .connect-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(164,255,46,0.25);}
+  .connect-btn.connected{background:#1e2a10;color:var(--green);border:1px solid var(--green);}
+
+  /* MAIN */
+  .main{flex:1;padding:22px 26px 60px 26px;min-width:0;}
+
+  .top-grid{display:grid;grid-template-columns:1.55fr 0.9fr;gap:18px;margin-bottom:18px;}
+  @media(max-width:1100px){.top-grid{grid-template-columns:1fr;}}
+
+  .hero{
+    position:relative;overflow:hidden;
+    border:1px solid var(--border);border-radius:18px;
+    background:linear-gradient(160deg,#1c0f0a,#170b08 60%);
+    padding:36px;
+    min-height:340px;
+  }
+  .hero-tag{color:var(--green);font-weight:600;}
+  .hero h1{font-size:40px;line-height:1.15;font-weight:800;margin-bottom:6px;}
+  .hero .sub{font-size:19px;color:var(--text-dim);font-weight:600;margin-bottom:14px;}
+  .hero .headline{font-size:34px;font-weight:800;line-height:1.2;margin:14px 0 12px;}
+  .hero .headline .g{color:var(--green);}
+  .hero p.desc{color:var(--text-dim);max-width:430px;font-size:14.5px;line-height:1.6;margin-bottom:22px;}
+  .hero-actions{display:flex;gap:12px;}
+  .btn-primary{
+    background:var(--green);color:#0c0705;border:none;padding:13px 22px;border-radius:10px;
+    font-weight:700;font-size:14.5px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(164,255,46,0.3);}
+  .btn-secondary{
+    background:transparent;color:var(--text);border:1px solid var(--border);padding:13px 22px;
+    border-radius:10px;font-weight:600;font-size:14.5px;cursor:pointer;
+    display:flex;align-items:center;gap:8px;transition:.15s;
+  }
+  .btn-secondary:hover{border-color:var(--green);color:var(--green);}
+
+  .qr-visual{
+    position:absolute;right:30px;top:50%;transform:translateY(-46%);
+    width:230px;height:230px;
+  }
+  .qr-visual svg{width:100%;height:100%;filter:drop-shadow(0 0 30px rgba(164,255,46,0.35));}
+  .qr-node{
+    position:absolute;width:38px;height:38px;border-radius:10px;
+    background:#1c120b;border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:15px;
+    animation:float 4s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  .built-on{
+    position:absolute;bottom:24px;right:30px;
+    background:#150c08;border:1px solid var(--border);border-radius:12px;
+    padding:9px 14px;font-size:12px;color:var(--text-dim);
+    display:flex;align-items:center;gap:8px;
+  }
+  .built-on b{color:var(--green);}
+
+  /* LIVE STATS */
+  .stats-panel{
+    border:1px solid var(--border);border-radius:18px;background:var(--panel);
+    padding:20px;display:flex;flex-direction:column;gap:12px;
+  }
+  .stats-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .stats-head h3{font-size:15px;font-weight:700;}
+  .live-dot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:600;}
+  .live-dot .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(164,255,46,.6);}70%{box-shadow:0 0 0 7px rgba(164,255,46,0);}100%{box-shadow:0 0 0 0 rgba(164,255,46,0);}}
+  .stat-row{
+    display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;
+    transition:background .15s;
+  }
+  .stat-row:hover{background:#20130d;}
+  .stat-icon{
+    width:38px;height:38px;border-radius:10px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+  }
+  .stat-info{flex:1;min-width:0;}
+  .stat-label{font-size:12px;color:var(--text-faint);}
+  .stat-value{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .stat-delta{font-size:12px;color:var(--green);font-weight:700;white-space:nowrap;}
+
+  /* SECTION GRID (Intro / Vision / Mission) */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px;}
+  @media(max-width:900px){.grid3{grid-template-columns:1fr;}}
+  .card{
+    border:1px solid var(--border);border-radius:16px;background:var(--panel-2);
+    padding:20px;
+  }
+  .card h3{display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:10px;}
+  .card p{font-size:13.5px;color:var(--text-dim);line-height:1.6;}
+  .card ul{margin-top:8px;padding-left:0;list-style:none;}
+  .card ul li{font-size:13.5px;color:var(--text-dim);line-height:1.7;padding-left:16px;position:relative;}
+  .card ul li::before{content:'•';color:var(--green);position:absolute;left:0;}
+  .learn-more{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-size:13px;font-weight:700;margin-top:10px;cursor:pointer;}
+  .learn-more:hover{gap:9px;transition:gap .15s;}
+
+  .section-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;margin-bottom:16px;}
+
+  /* HOW IT WORKS */
+  .two-col{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:18px;}
+  @media(max-width:1000px){.two-col{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--border);border-radius:16px;background:var(--panel-2);padding:20px;}
+  .steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:700px){.steps-row{grid-template-columns:repeat(2,1fr);}}
+  .step{
+    border:1px solid var(--border);border-radius:12px;padding:14px;background:#170d09;
+    cursor:pointer;transition:.15s;position:relative;
+  }
+  .step:hover{border-color:var(--green);transform:translateY(-3px);}
+  .step .num{
+    width:26px;height:26px;border-radius:8px;background:var(--green);color:#0c0705;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;margin-bottom:8px;
+  }
+  .step h4{font-size:13.5px;margin-bottom:6px;}
+  .step p{font-size:12px;color:var(--text-faint);line-height:1.5;}
+
+  /* TOKEN UTILITY */
+  .token-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
+  @media(max-width:900px){.token-grid{grid-template-columns:repeat(2,1fr);}}
+  .token-grid.three{grid-template-columns:repeat(3,1fr);}
+  .tbox{
+    border:1px solid var(--border);border-radius:12px;padding:14px;background:#170d09;
+    transition:.15s;
+  }
+  .tbox:hover{border-color:var(--green);}
+  .tbox h4{font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .tbox p{font-size:12px;color:var(--text-faint);line-height:1.5;}
+
+  /* CORE TECH */
+  .tech-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
+  @media(max-width:900px){.tech-row{grid-template-columns:repeat(3,1fr);}}
+  .tech-item{text-align:left;}
+  .tech-circle{
+    width:44px;height:44px;border-radius:50%;border:1px solid var(--green);
+    display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px;
+    color:var(--green);background:#151009;
+  }
+  .tech-item h5{font-size:13px;margin-bottom:5px;}
+  .tech-item p{font-size:11.5px;color:var(--text-faint);line-height:1.5;}
+
+  /* ROADMAP */
+  .roadmap-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  @media(max-width:1000px){.roadmap-row{grid-template-columns:repeat(2,1fr);}}
+  .phase{
+    border:1px solid var(--border);border-radius:12px;padding:14px;background:#170d09;
+  }
+  .phase-tag{
+    display:inline-block;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;
+    margin-bottom:8px;letter-spacing:.4px;
+  }
+  .phase-tag.p1{background:rgba(164,255,46,0.15);color:var(--green);}
+  .phase-tag.p2{background:rgba(255,77,77,0.15);color:var(--red);}
+  .phase-tag.p3{background:rgba(255,159,64,0.15);color:var(--orange);}
+  .phase-tag.p4{background:rgba(176,131,255,0.15);color:var(--purple);}
+  .phase h4{font-size:13.5px;margin-bottom:2px;}
+  .phase .desc-sm{font-size:11px;color:var(--text-faint);margin-bottom:8px;}
+  .phase ul{list-style:none;}
+  .phase ul li{font-size:11.5px;color:var(--text-dim);line-height:1.7;padding-left:14px;position:relative;}
+  .phase ul li::before{content:'•';color:var(--text-faint);position:absolute;left:0;}
+
+  /* FOOTER BAR */
+  .footerbar{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--border);padding:16px 26px;
+    font-size:13px;color:var(--text-dim);
+  }
+  .footerbar .fnav{display:flex;gap:26px;font-weight:700;color:var(--green);}
+  .footerbar .fnav span{cursor:pointer;}
+  .footerbar .fnav span:hover{text-decoration:underline;}
+
+  .toast{
+    position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#151009;border:1px solid var(--green);color:var(--green);
+    padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:600;
+    opacity:0;pointer-events:none;transition:all .25s ease;z-index:999;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:#2a1610;border-radius:8px;}
+
+  @media(max-width:820px){
+    .layout{flex-direction:column;}
+    .sidebar{position:relative;width:100%;height:auto;flex-direction:row;flex-wrap:wrap;}
+    nav.mainnav{flex-direction:row;flex-wrap:wrap;}
+    .sidebar-footer{display:none;}
+    .qr-visual{display:none;}
+    .hero h1{font-size:30px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><span class="sq"></span>QR<span class="dim">connect</span></div>
+    <nav class="mainnav" id="mainnav">
+      <div class="nav-item active" data-section="hero"><span class="ic">🏠</span>Home</div>
+      <div class="nav-item" data-section="generator"><span class="ic">▦</span>QR Generator</div>
+      <div class="nav-item" data-section="routing"><span class="ic">🧠</span>AI Routing</div>
+      <div class="nav-item" data-section="analytics"><span class="ic">📊</span>Analytics</div>
+      <div class="nav-item" data-section="token"><span class="ic">🪙</span>Token Utility</div>
+      <div class="nav-item" data-section="tech"><span class="ic">🌐</span>Core Technology</div>
+      <div class="nav-item" data-section="roadmap"><span class="ic">🗺️</span>Roadmap</div>
+      <div class="nav-item" data-section="developer"><span class="ic">⚙️</span>Developer</div>
+      <div class="nav-item" data-section="community"><span class="ic">👥</span>Community</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="network-box">
+        <div class="label">Network</div>
+        <div class="name">🍃 Robinhood Network</div>
+      </div>
+      <div class="socials">
+        <span title="X / Twitter">𝕏</span>
+        <span title="Telegram">✈</span>
+        <span title="Discord">◎</span>
+        <span title="Mirror">Ⓜ</span>
+      </div>
+      <div style="height:12px;"></div>
+      <button class="connect-btn" id="walletBtn">🔗 Connect Wallet</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="top-grid">
+      <!-- HERO -->
+      <section class="hero" id="hero">
+        <div class="hero-tag" style="font-size:12px;letter-spacing:1px;text-transform:uppercase;">QRconnect</div>
+        <div class="sub">The Universal QR Infrastructure<br>of <span style="color:var(--green)">Robinhood Network</span></div>
+        <div class="headline">One Scan.<br><span class="g">Infinite Connections.</span></div>
+        <p class="desc">QRconnect unifies digital platforms through intelligent QR technology powered by AI and blockchain on Robinhood Network.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" id="genBtn">Generate QR ▦</button>
+          <button class="btn-secondary" id="whitepaperBtn">Read Whitepaper 📄</button>
+        </div>
+
+        <div class="qr-visual" id="qrVisual">
+          <svg viewBox="0 0 100 100" id="qrSvg"></svg>
+        </div>
+
+        <div class="built-on">🍃 Built on <b>Robinhood Network</b></div>
+      </section>
+
+      <!-- LIVE STATS -->
+      <section class="stats-panel" id="analytics">
+        <div class="stats-head">
+          <h3>Live Statistics</h3>
+          <div class="live-dot"><span class="dot"></span>Live</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-icon" style="background:rgba(164,255,46,0.15);color:var(--green);">▦</div>
+          <div class="stat-info"><div class="stat-label">QR Generated</div><div class="stat-value" id="s1">2,431,991</div></div>
+          <div class="stat-delta">↗ +24.5%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-icon" style="background:rgba(255,77,77,0.15);color:var(--red);">◱</div>
+          <div class="stat-info"><div class="stat-label">Daily Scan</div><div class="stat-value" id="s2">587,183</div></div>
+          <div class="stat-delta">↗ +18.2%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-icon" style="background:rgba(255,159,64,0.15);color:var(--orange);">▤</div>
+          <div class="stat-info"><div class="stat-label">Connected Platforms</div><div class="stat-value" id="s3">420+</div></div>
+          <div class="stat-delta">↗ +12.4%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-icon" style="background:rgba(176,131,255,0.15);color:var(--purple);">👛</div>
+          <div class="stat-info"><div class="stat-label">Wallet Connected</div><div class="stat-value" id="s4">95,442</div></div>
+          <div class="stat-delta">↗ +15.7%</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-icon" style="background:rgba(77,195,255,0.15);color:var(--blue);">🌐</div>
+          <div class="stat-info"><div class="stat-label">Countries Reached</div><div class="stat-value" id="s5">140</div></div>
+          <div class="stat-delta">↗ +9.1%</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- INTRO / VISION / MISSION -->
+    <div class="grid3">
+      <div class="card">
+        <h3>📖 Introduction</h3>
+        <p>QRconnect is the next-generation connectivity protocol built on Robinhood Network, unifying physical and digital experiences through intelligent QR technology, AI routing, and blockchain verification. One scan connects users to infinite possibilities.</p>
+        <div class="learn-more">Learn more →</div>
+      </div>
+      <div class="card">
+        <h3>👁 Vision</h3>
+        <p>To become the universal QR connectivity infrastructure of Robinhood Network, enabling seamless interaction between every digital platform, business, and user through one intelligent scan.</p>
+        <div class="learn-more">Learn more →</div>
+      </div>
+      <div class="card">
+        <h3>🎯 Mission</h3>
+        <ul>
+          <li>Simplify digital connectivity through intelligent QR technology.</li>
+          <li>Connect Web2 and Web3 platforms using blockchain.</li>
+          <li>Empower businesses with secure and dynamic QR solutions.</li>
+          <li>Deliver AI-powered routing and analytics.</li>
+          <li>Establish QRconnect as the global gateway for decentralized digital connectivity.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- HOW IT WORKS / TOKEN UTILITY -->
+    <div class="two-col">
+      <div class="panel" id="routing">
+        <div class="section-title">⚡ How QRconnect Works</div>
+        <div class="steps-row">
+          <div class="step" data-tip="Create intelligent QR codes for wallets, websites, payments, NFTs, apps & more."><div class="num">1</div><h4>Universal QR Generator</h4><p>Create intelligent QR codes for wallets, websites, payments, NFTs, apps & more.</p></div>
+          <div class="step" data-tip="AI identifies device, location & preference to deliver the best destination."><div class="num">2</div><h4>AI Smart Routing</h4><p>AI identifies device, location & preference to deliver the best destination.</p></div>
+          <div class="step" data-tip="Connect across Web2, Web3, dApps, payments, identity & enterprise platforms."><div class="num">3</div><h4>Multi-Platform Connectivity</h4><p>Connect across Web2, Web3, dApps, payments, identity & enterprise platforms.</p></div>
+          <div class="step" data-tip="Blockchain verification, encrypted auth & decentralized identity ensure maximum security."><div class="num">4</div><h4>Secure Digital Verification</h4><p>Blockchain verification, encrypted auth & decentralized identity ensure maximum security.</p></div>
+          <div class="step" data-tip="QR codes are fully updatable without changing their appearance."><div class="num">5</div><h4>Dynamic QR Intelligence</h4><p>QR codes are fully updatable without changing their appearance.</p></div>
+          <div class="step" data-tip="Real-time insights on scans, engagement, conversion & security monitoring."><div class="num">6</div><h4>AI Analytics Dashboard</h4><p>Real-time insights on scans, engagement, conversion & security monitoring.</p></div>
+        </div>
+      </div>
+
+      <div class="panel" id="token">
+        <div class="section-title">◎ Token Utility</div>
+        <div class="token-grid">
+          <div class="tbox"><h4>▦ QR Generation</h4><p>Generate dynamic QR, enterprise solutions, marketing campaigns & secure connections.</p></div>
+          <div class="tbox"><h4>✧ Premium AI Services</h4><p>AI routing, analytics, audience intelligence, predictive engagement & optimization.</p></div>
+          <div class="tbox"><h4>🏛 Governance</h4><p>Vote on upgrades, integrations, treasury & ecosystem proposals.</p></div>
+          <div class="tbox"><h4>◈ Staking</h4><p>Earn rewards, unlock premium features, increase voting power & secure the network.</p></div>
+        </div>
+        <div class="token-grid three">
+          <div class="tbox"><h4>&lt;/&gt; Developer Ecosystem</h4><p>Access SDK, APIs for QR, auth, analytics & digital identity.</p></div>
+          <div class="tbox"><h4>▣ Enterprise Solutions</h4><p>Smart payments, loyalty, tickets, verification & supply chain tracking.</p></div>
+          <div class="tbox"><h4>◉ Community Rewards</h4><p>Earn tokens through contributions, referrals, governance & ecosystem campaigns.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORE TECH / ROADMAP -->
+    <div class="two-col">
+      <div class="panel" id="tech">
+        <div class="section-title">✳ Core Technology</div>
+        <div class="tech-row">
+          <div class="tech-item"><div class="tech-circle">▦</div><h5>Universal QR Layer</h5><p>Transforms any QR into an intelligent gateway.</p></div>
+          <div class="tech-item"><div class="tech-circle">🧠</div><h5>AI Smart Routing</h5><p>Delivers users to the optimal destination instantly.</p></div>
+          <div class="tech-item"><div class="tech-circle">🛡</div><h5>Blockchain Verification</h5><p>Authenticated using decentralized security & blockchain.</p></div>
+          <div class="tech-item"><div class="tech-circle">✎</div><h5>Dynamic QR Engine</h5><p>Editable & upgradeable without changing original QR.</p></div>
+          <div class="tech-item"><div class="tech-circle">📶</div><h5>Real-Time Analytics</h5><p>Comprehensive insights into behavior & scan performance.</p></div>
+          <div class="tech-item"><div class="tech-circle">🌐</div><h5>Scalable Web3 Infra</h5><p>Supports millions of interactions across ecosystems.</p></div>
+        </div>
+      </div>
+
+      <div class="panel" id="roadmap">
+        <div class="section-title">🧭 Roadmap</div>
+        <div class="roadmap-row">
+          <div class="phase">
+            <span class="phase-tag p1">PHASE 1</span>
+            <h4>Foundation</h4>
+            <div class="desc-sm">Building Universal Connectivity</div>
+            <ul><li>Token Launch</li><li>Robinhood Deployment</li><li>Official Website</li><li>Whitepaper Release</li><li>Community Launch</li><li>QR Generator</li><li>Developer Docs</li></ul>
+          </div>
+          <div class="phase">
+            <span class="phase-tag p2">PHASE 2</span>
+            <h4>Smart Connections</h4>
+            <div class="desc-sm">Connecting Every Platform</div>
+            <ul><li>Dynamic QR Engine</li><li>AI Smart Routing</li><li>Wallet Integration</li><li>QR Dashboard</li><li>Enterprise API</li><li>Developer SDK</li><li>Analytics Platform</li></ul>
+          </div>
+          <div class="phase">
+            <span class="phase-tag p3">PHASE 3</span>
+            <h4>Digital Ecosystem</h4>
+            <div class="desc-sm">Beyond Traditional QR</div>
+            <ul><li>NFT QR Integration</li><li>Cross-Chain QR</li><li>Decentralized Identity</li><li>Mobile Application</li><li>Enterprise Console</li><li>AI Recommendation</li><li>Smart Business Tools</li></ul>
+          </div>
+          <div class="phase">
+            <span class="phase-tag p4">PHASE 4</span>
+            <h4>Universal Digital Gateway</h4>
+            <div class="desc-sm">The Future of Connectivity</div>
+            <ul><li>DAO Governance</li><li>Autonomous AI Routing</li><li>Global QR Infra</li><li>Universal Identity</li><li>Cross-Platform Automation</li><li>Multi-Chain Ecosystem</li><li>Intelligent Gateway</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="developer" style="margin-bottom:18px;">
+      <div class="section-title">⚙ Developer</div>
+      <p style="color:var(--text-dim);font-size:13.5px;line-height:1.7;">Build with the QRconnect SDK — generate dynamic QR codes, verify identities on-chain, and plug into AI routing with a few lines of code.</p>
+      <pre style="background:#0e0806;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:12px;font-size:12px;color:var(--green);overflow-x:auto;">npm install @qrconnect/sdk
+
+import { QRConnect } from '@qrconnect/sdk';
+const qr = new QRConnect({ network: 'robinhood' });
+qr.generate({ type: 'wallet', target: '0xABC...' });</pre>
+    </div>
+
+    <div class="panel" id="community" style="margin-bottom:18px;">
+      <div class="section-title">👥 Community</div>
+      <p style="color:var(--text-dim);font-size:13.5px;line-height:1.7;margin-bottom:14px;">Join the growing QRconnect community across every channel of Robinhood Network.</p>
+      <div class="socials" style="gap:14px;">
+        <span style="width:40px;height:40px;font-size:15px;">𝕏</span>
+        <span style="width:40px;height:40px;font-size:15px;">✈</span>
+        <span style="width:40px;height:40px;font-size:15px;">◎</span>
+        <span style="width:40px;height:40px;font-size:15px;">Ⓜ</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<div class="footerbar">
+  <div class="logo" style="padding:0;font-size:16px;">QR<span class="dim">connect</span></div>
+  <div class="fnav"><span>Scan</span><span>Connect</span><span>Verify</span><span>Expand</span></div>
+  <div>🍃 Built on <b style="color:var(--green);">Robinhood Network</b></div>
+</div>
+
+<div class="toast" id="toast">Wallet connected successfully</div>
+
+<script>
+// ---- Simple QR-like pattern generator (visual only) ----
+function drawQR(){
+  const svg = document.getElementById('qrSvg');
+  const size = 11;
+  let cells = '';
+  const rng = (x,y)=> ( (x*928371 + y*13317 + 7) % 97 ) / 97;
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      // finder patterns corners
+      const inCorner = (cx,cy)=> x>=cx&&x<cx+3&&y>=cy&&y<cy+3;
+      let on;
+      if(inCorner(0,0)||inCorner(size-3,0)||inCorner(0,size-3)){
+        on = (x===0||x===size-1||y===0||y===size-1|| (inCorner(0,0)&&x>=1&&x<2&&y>=1&&y<2) ) ? true : (rng(x,y)>0.5);
+        on = true;
+      } else {
+        on = rng(x,y) > 0.55;
+      }
+      if(on){
+        cells += `<rect x="${x*100/size}" y="${y*100/size}" width="${100/size-1}" height="${100/size-1}" fill="#a4ff2e" rx="1"/>`;
+      }
+    }
+  }
+  svg.innerHTML = `<rect width="100" height="100" rx="8" fill="#0e0906"/>` + cells;
+}
+drawQR();
+
+// ---- Nav switching ----
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    const target = document.getElementById(item.dataset.section);
+    if(target){ target.scrollIntoView({behavior:'smooth', block:'start'}); }
+  });
+});
+
+// ---- Toast helper ----
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+// ---- Wallet connect toggle ----
+const walletBtn = document.getElementById('walletBtn');
+let connected = false;
+walletBtn.addEventListener('click', ()=>{
+  connected = !connected;
+  if(connected){
+    walletBtn.textContent = '✓ Wallet Connected';
+    walletBtn.classList.add('connected');
+    showToast('Wallet connected successfully');
+  } else {
+    walletBtn.textContent = '🔗 Connect Wallet';
+    walletBtn.classList.remove('connected');
+    showToast('Wallet disconnected');
+  }
+});
+
+// ---- Generate QR button ----
+document.getElementById('genBtn').addEventListener('click', ()=>{
+  drawQR();
+  document.getElementById('qrVisual').style.transform = 'scale(1.06)';
+  setTimeout(()=>{ document.getElementById('qrVisual').style.transform = 'scale(1)'; }, 220);
+  showToast('New dynamic QR generated ✓');
+  document.getElementById('generator').scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('whitepaperBtn').addEventListener('click', ()=>{
+  showToast('Opening whitepaper…');
+});
+
+// ---- Step tooltip toast ----
+document.querySelectorAll('.step').forEach(step=>{
+  step.addEventListener('click', ()=> showToast(step.querySelector('h4').textContent + ' — ' + step.dataset.tip));
+});
+
+// ---- Live stats counter animation ----
+const stats = [
+  { id:'s1', base:2431991, step:[3,40] },
+  { id:'s2', base:587183,  step:[1,15] },
+  { id:'s3', base:420,     step:[0,1], suffix:'+' },
+  { id:'s4', base:95442,   step:[1,9] },
+  { id:'s5', base:140,     step:[0,0] },
+];
+function fmt(n){ return n.toLocaleString('en-US'); }
+setInterval(()=>{
+  stats.forEach(s=>{
+    const inc = Math.floor(Math.random()*(s.step[1]-s.step[0]+1))+s.step[0];
+    s.base += inc;
+    const el = document.getElementById(s.id);
+    el.textContent = fmt(s.base) + (s.suffix||'');
+    el.parentElement.parentElement.style.background = '#221408';
+    setTimeout(()=>{ el.parentElement.parentElement.style.background = ''; }, 300);
+  });
+}, 2200);
+
+// ---- Learn more toasts ----
+document.querySelectorAll('.learn-more').forEach(el=>{
+  el.addEventListener('click', ()=> showToast('Loading more details…'));
+});
+</script>
+</body>
+</html>
